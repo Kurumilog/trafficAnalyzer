@@ -2,6 +2,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 
 
 def _save_figure(fig, path):
@@ -86,6 +87,27 @@ def plot_results(re_test, y_test, threshold, W, X_test_sc, f1, K, output_dir='.'
     ax3.set_ylabel('Principal component 2')
     ax3.grid(True, alpha=0.15)
     _save_figure(fig3, output_dir / f'{prefix}_pca_projection.png')
+
+    if W.shape[1] >= 3:
+        fig4 = plt.figure(figsize=(9, 8))
+        ax4 = fig4.add_subplot(111, projection='3d')
+        proj3 = X_test_sc @ W[:, :3]
+        projection_sample3 = np.random.choice(len(proj3), min(2500, len(proj3)), replace=False)
+        proj_colors3 = np.where(y_test[projection_sample3] == 1, '#d95f5f', '#4c78a8')
+        ax4.scatter(
+            proj3[projection_sample3, 0],
+            proj3[projection_sample3, 1],
+            proj3[projection_sample3, 2],
+            c=proj_colors3,
+            s=12,
+            alpha=0.65,
+            linewidths=0,
+        )
+        ax4.set_title('First three PCA components')
+        ax4.set_xlabel('Principal component 1')
+        ax4.set_ylabel('Principal component 2')
+        ax4.set_zlabel('Principal component 3')
+        _save_figure(fig4, output_dir / f'{prefix}_pca_3d_projection.png')
 
     _make_confusion_matrix(y_test, predicted, output_dir / f'{prefix}_confusion_matrix.png')
 
